@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react"
 import Message from "../model/message"
-import call from "../util/apiCall";
+import { callMessage, callWrite } from "../util/apiCall";
+import { Button, TextField } from "@mui/material";
 
 export default function Chat() {
 
     const [messages, setMessages] = useState<Message[]>([])
+    const [message, setMessage] = useState("");
 
     useEffect(() => {
         const requestOptions = {
@@ -16,16 +18,49 @@ export default function Chat() {
                 offset: 0
             })
         };
-        call("/log.v1.Log/ReadStream", requestOptions, setMessages);
+        callMessage("/log.v1.Log/ReadStream", requestOptions, setMessages);
     }, [])
 
-    useEffect(() => {
-        console.log(messages)
-    }, [messages])
+    const createMessage = (message: Message) => {
+        return (
+            <div className="message">
+                {atob(message.value)}
+            </div>
+        )
+    }
+
+    const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setMessage(e.target.value);
+    }
+
+    const handleSendClick = () => {
+        const requestOptions = {
+            method: "POST",
+            headers: {
+                "Content-type": "application/json",
+            },
+            body: JSON.stringify({
+                record: {
+                    value: btoa(message)
+                }
+            })
+        };
+        callWrite("/log.v1.Log/Write", requestOptions);
+        setMessage("");
+    }
 
     return (
         <>
-            {messages?.map((message) => atob(message?.value))}
+            <div id="container">
+                <div id="messageContainer">
+                    {messages?.map((message) => createMessage(message))}
+                </div>
+                <div id="sendContainer">
+                    <TextField fullWidth multiline value={message} onChange={(e) => handleMessageChange(e)} />
+                    <Button variant="contained" onClick={handleSendClick} >Envoyer</Button>
+                </div>
+            </div>
+            
         </>
     )
 }
