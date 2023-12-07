@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import Message from "../model/message"
 import { callMessage, callWrite } from "../util/apiCall";
 import { Button, TextField } from "@mui/material";
+import { getDistance } from 'geolib';
 
 export default function Chat() {
 
@@ -18,7 +19,7 @@ export default function Chat() {
                 offset: 0
             })
         };
-        callMessage("/log.v1.Log/ReadStream", requestOptions, setMessages);
+        callMessage("http://127.0.0.1:8083/log.v1.Log/ReadStream", requestOptions, setMessages);
     }, [])
 
     const createMessage = (message: Message) => {
@@ -45,9 +46,30 @@ export default function Chat() {
                 }
             })
         };
-        callWrite("/log.v1.Log/Write", requestOptions);
+        callWrite("http://127.0.0.1:8083/log.v1.Log/Write", requestOptions);
         setMessage("");
     }
+
+    useEffect(() => {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                console.log(
+                    'You are ',
+                    getDistance({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    }, {
+                        latitude: 51.525,
+                        longitude: 7.4575,
+                    }),
+                    'meters away from 51.525, 7.4575'
+                );
+            },
+            () => {
+                alert('Position could not be determined.');
+            }
+        );
+    }, [])
 
     return (
         <>
