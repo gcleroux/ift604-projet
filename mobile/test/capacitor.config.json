@@ -1,0 +1,11 @@
+{
+  "appId": "io.ionic.nameofyourapp",
+  "appName": "TheApp",
+  "bundledWebRuntime": false,
+  "npmClient": "npm",
+  "webDir": "dist",
+  "cordova": {},
+  "server": {
+    "androidScheme": "https"
+  }
+}
