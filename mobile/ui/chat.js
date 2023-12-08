@@ -1,4 +1,4 @@
-import { Text, View, TextInput, Button } from 'react-native';
+import { Text, View, TextInput, Button, FlatList } from 'react-native';
 import { useState, useEffect } from 'react'
 import {decode as atob, encode as btoa} from 'base-64'
 
@@ -10,72 +10,40 @@ export default function Chat({ route, navigation }) {
     const [message, setMessage] = useState("");
 
     useEffect(() => {
+        read(0, []);
+    }, [])
+
+    const read = (i, temp) => {
         const requestOptions = {
             method: "POST",
             headers: {
                 "Content-type": "application/json",
             },
             body: JSON.stringify({
-                offset: 0
+                offset: i
             })
         };
-        fetch(`http://192.168.1.16:${server.gatewayPort.toString()}/log.v1.Log/ReadStream`, requestOptions).then((response) => {
-            console.log('sdfdf')
-            if (!response.ok) {
-                throw response.statusText;
-                
+        fetch(`http://192.168.1.16:${server.gatewayPort.toString()}/log.v1.Log/Read`, requestOptions).then((response) => {
+            if (response.ok) {
+                return response.json()
             }
-            const stream = response.body;
-    
-            if (stream === null) {
-                throw "null stream";
-            }
-    
-            const reader = stream.getReader();
-            let messages = []
-
-            console.log('t')
-    
-            const readChunk = () => {
-                reader.read()
-                    .then(({value,done}) => {
-                        if (done) {
-                            console.log('Stream finished');
-                            return;
-                        }
-
-                        console.log(value)
-                      
-                        const stringArray = new TextDecoder().decode(value).split("\n");
-                        const array = []
-    
-                        messages.forEach((message) => {
-                            array.push(message);
-                        })
-                        stringArray.forEach((value) => {
-                            if (value !== "")
-                                array.push(JSON.parse(value).result.record);
-                        });
-                        setMessages(array);
-                        messages = array;
-                       
-                        readChunk();
-                    })
-                    .catch(error => {
-                        console.error(error);
+            setTimeout(() => {
+                read(i, temp);
+            }, 100)
+        }).then((data) => {
+            if (data !== undefined) {
+                if (data.record.value !== "" && data.record.server === server.id) {
+                    const temp2 = []
+                    temp.forEach(element => {
+                        temp2.push(element)
                     });
-            };
-            readChunk();
+                    temp2.push(data.record);
+                    setMessages(temp2);
+                    temp = temp2;
+                }
+                read(i+1, temp)
+            }
         }).catch((err) => console.log(err));
-    }, [])
-
-    const createMessage = (message) => {
-        console.log(message)
-        return (
-            <Text>
-                {atob(message.value)}
-            </Text>
-        )
     }
 
     const handleSendClick = () => {
@@ -101,7 +69,10 @@ export default function Chat({ route, navigation }) {
     return (
         <View>
             <Text style={{margin: 10, fontSize: 50}}>Chats {server.id}</Text>
-            {messages?.map((message) => createMessage(message))}
+            {messages !== undefined? <FlatList
+                data={messages}
+                renderItem={(message) => <Text>{atob(message.item.value)}</Text>}
+            /> : <></>}
             <TextInput value={message} onChangeText={setMessage} />
             <Button title="Envoyer" onPress={handleSendClick} />
         </View>
