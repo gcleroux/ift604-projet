@@ -23,7 +23,7 @@ export default function ListeChat() {
                         radius: 1000
                     })
                 };
-                call("http://127.100.100.100:8081/log.v1.Log/GetServers", requestOptions, setServers);
+                call("http://127.0.0.1:8081/log.v1.Log/GetServers", requestOptions, setServers);
             },
             () => {
                 alert('Position could not be determined.');

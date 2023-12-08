@@ -21,7 +21,7 @@ export default function Chat() {
                 offset: 0
             })
         };
-        callMessage(`http://${state.server.rpcAddr.split(":")[0] + ":" + state.server.gatewayPort.toString()}/log.v1.Log/ReadStream`, requestOptions, setMessages);
+        callMessage(`http://127.0.0.1:${state.server.gatewayPort.toString()}/log.v1.Log/ReadStream`, requestOptions, setMessages);
     }, [])
 
     const createMessage = (message: Message) => {
@@ -48,7 +48,7 @@ export default function Chat() {
                 }
             })
         };
-        callWrite(`http://${state.server.rpcAddr.split(":")[0] + ":" + state.server.gatewayPort.toString()}/log.v1.Log/Write`, requestOptions);
+        callWrite(`http://127.0.0.1:${state.server.gatewayPort.toString()}/log.v1.Log/Write`, requestOptions);
         setMessage("");
     }
 
