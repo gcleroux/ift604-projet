@@ -55,3 +55,13 @@ export function callWrite(url: string, requestOptions: any) {
         }
     })
 }
+
+export function call(url: string, requestOptions: any, setFunc: React.Dispatch<React.SetStateAction<any>>) {
+    fetch(url, requestOptions).then((res) => {
+        if (res.ok) {
+            return res.json()
+        }
+    }).then((data) => {
+        setFunc(data)
+    })
+}

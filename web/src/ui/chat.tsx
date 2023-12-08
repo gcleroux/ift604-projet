@@ -2,9 +2,12 @@ import { useEffect, useState } from "react"
 import Message from "../model/message"
 import { callMessage, callWrite } from "../util/apiCall";
 import { Button, TextField } from "@mui/material";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function Chat() {
 
+    const { state } = useLocation();
+    const navigate = useNavigate();
     const [messages, setMessages] = useState<Message[]>([])
     const [message, setMessage] = useState("");
 
@@ -18,12 +21,12 @@ export default function Chat() {
                 offset: 0
             })
         };
-        callMessage("/log.v1.Log/ReadStream", requestOptions, setMessages);
+        callMessage(`http://${state.server.rpcAddr.split(":")[0] + ":" + state.server.gatewayPort.toString()}/log.v1.Log/ReadStream`, requestOptions, setMessages);
     }, [])
 
     const createMessage = (message: Message) => {
         return (
-            <div className="message">
+            <div key={message.offset} className="message">
                 {atob(message.value)}
             </div>
         )
@@ -45,12 +48,17 @@ export default function Chat() {
                 }
             })
         };
-        callWrite("/log.v1.Log/Write", requestOptions);
+        callWrite(`http://${state.server.rpcAddr.split(":")[0] + ":" + state.server.gatewayPort.toString()}/log.v1.Log/Write`, requestOptions);
         setMessage("");
+    }
+
+    const handleRetourClick = () => {
+        navigate(-1)
     }
 
     return (
         <>
+            <Button onClick={handleRetourClick} variant="contained">Retour</Button>
             <div id="container">
                 <div id="messageContainer">
                     {messages?.map((message) => createMessage(message))}
